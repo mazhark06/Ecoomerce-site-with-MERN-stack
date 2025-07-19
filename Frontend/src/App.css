@@ -1,0 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap');
+@import 'tailwindcss';
+.font-family{
+font-family: 'Mochiy pop one' , sans-serif;
+}
