@@ -7,13 +7,11 @@ import {
 } from "../utils/generateTokens.js";
 
 const userSignup = async (req, res ) => {
-  // console.log(req);
-  console.log(req.body);
   
   if (!req.body) return res.json(new Apiresponse(402, 'body is khali '))
+    
   try {
     let { username,  password, email } = req.body;
-console.log(username);
 
     if (!username || !email || !password)
       return res
@@ -23,7 +21,6 @@ console.log(username);
     let userExist = await User.findOne({
       $or: [{ email: email }, { username: username }],
     });
-console.log(userExist);
 
     if (userExist)
       return res.json(new Apiresponse(402, "User Already exists"));
@@ -42,44 +39,46 @@ console.log(userExist);
         maxAge: 24 * 60 * 60 * 1000,
         secure: false,
       })
-      .json(new Apiresponse(200, "User Created Successfully", {accessToken}));
+      .json(new Apiresponse(200, "User Created Successfully",true , false, {accessToken}));
   } catch (error) {
     console.log(error);
-    res.json(new Apiresponse(402, "Signup Failed", req.body, error));
+    res.json(new Apiresponse(402, "Signup Failed",false, true, req.body));
   }
 };
 
 
 const userLogin = async (req, res) => {
-    
-//     const authToken = req.header('Authorization')?.split(' ')[1] || req.cookies.refreshToken
-//     console.log(authToken);
-    
-// if(authToken){
-//     let validToken = await verifyJWT(authToken)
-//     if(validToken) return res.status(200, 'Authorized' , {redirect : '/' , success : true})
-// }
+
 
   const {username , password}  = req.body
-    if(!username || !password) return res.json(new Apiresponse(402, 'Please enter your credentials'))
+  // console.log(req.body);
+  
+    if(!username || !password) return res.status(401).json(new Apiresponse(402, 'Please enter your credentials'))
   let userExist = await User.findOne({
 $or:[
     {username : username},
     {email:username}
 ]
 }).select('+password')
-if(!userExist) return res.status(402, 'User not found')
+if(!userExist) return res.status(401).json(new Apiresponse(402,'User not exist'))
     
     let isValidPass = await userExist.isMatchPassword(password)
     if(!isValidPass) return res.json(new Apiresponse(402,'Invalid credentials'))
         let accessToken = await generateAccessToken(userExist._id)
+      // console.log(accessToken);
+      
         let refreshToken = await generateRefreshToken(userExist._id)
         return res.status(200)
         .cookie('refreshToken' , refreshToken ,{
             secure :false,
             maxAge: 24 * 60 * 60 * 3600
         })
-        .json(new Apiresponse(200, 'User Login' , {accessToken}))
+        .json(new Apiresponse(200, 'User Login' , true , false , {accessToken}))
 };
 
-export { userSignup, userLogin };
+const userAuthchecker = async (req,res) => {
+  res.send('home')
+}
+
+
+export { userSignup, userLogin , userAuthchecker};

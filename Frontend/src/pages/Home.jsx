@@ -12,7 +12,11 @@ function Home() {
   }, [navigate]); // Added navigate to dependency array
   
   return (
-    <div>Home</div>
+    <div className=''>
+
+    Home
+
+    </div>
   );
 }
 

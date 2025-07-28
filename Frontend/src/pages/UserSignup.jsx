@@ -4,19 +4,33 @@ import Logo from "../components/Logo";
 import axios from "axios";
 function UserSignup() {
   let navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [Password, setPassword] = useState("");
-  const [ConfirmPass, setConfirmPass] = useState("");
+  const [credentials, setcredentials] = useState({
+    username :"",
+    email:"",
+    password:"",
+    ConfirmPassword:""
+  });
   const [error, seterror] = useState("");
+
+  const handleChange = (e) => {
+    let { name, value } = e.target;
+    setcredentials(prev=> ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   async function submitHandler(e) {
     e.preventDefault();
-    if (ConfirmPass !== Password) return seterror("Password doesn't match");
+    console.log(credentials);
+    
+    let { username, password, email, ConfirmPassword } = credentials;
+    if (ConfirmPassword !== password) return seterror("Password doesn't match");
     let response = await axios.post(
-      "http://localhost:3000/user/signup",
+      `${import.meta.env.VITE_REGISTER_URI}`,
       {
         username,
-        password: Password,
+        password,
         email,
       },
       {
@@ -26,14 +40,14 @@ function UserSignup() {
       }
     );
     let userdata = await response.data;
-    console.log(userdata);
+
     if (userdata.statusCode === 200) {
       localStorage.setItem("accessToken", userdata.data.accessToken);
       navigate("/");
+
     } else {
       seterror(userdata.message);
-      setUsername('')
-      setEmail('')
+      ;
     }
   }
 
@@ -68,8 +82,8 @@ function UserSignup() {
               type="text"
               id="user"
               name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={credentials.username || ""}
+              onChange={(e) => handleChange(e)}
             />
           </div>
           <div className=" mx-auto w-[25vw] max-sm:w-[85vw]  justify-center my-5 ">
@@ -81,8 +95,9 @@ function UserSignup() {
               className="bg-[#f1f0f0] w-full p-2 px-5 rounded-2xl focus:border-none outline-none text-xl max-sm:text-lg"
               type="email"
               id="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={credentials.email  || ""}
+              onChange={(e) => handleChange(e)}
             />
           </div>
           <div className=" mx-auto w-[25vw] max-sm:w-[85vw] justify-center my-5">
@@ -94,8 +109,9 @@ function UserSignup() {
               className="bg-[#f1f0f0] w-full p-2 px-5 rounded-2xl focus:border-none outline-none text-xl max-sm:text-lg"
               type="password"
               id="password"
-              value={Password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={credentials.password || ""}
+              onChange={(e) => handleChange(e)}
             />
           </div>
           <div className=" mx-auto w-[25vw] max-sm:w-[85vw] justify-center my-5">
@@ -106,9 +122,10 @@ function UserSignup() {
               required
               className="bg-[#f1f0f0] w-full p-2 px-5 rounded-2xl focus:border-none outline-none text-xl  max-sm:text-lg"
               type="password"
+              name="ConfirmPassword"
               id="confirmpassword"
-              value={ConfirmPass}
-              onChange={(e) => setConfirmPass(e.target.value)}
+              value={credentials.ConfirmPassword || ""}
+              onChange={(e) => handleChange(e)}
             />
           </div>
           <div className="mx-auto w-[25vw] max-sm:w-[85vw] justify-center">
