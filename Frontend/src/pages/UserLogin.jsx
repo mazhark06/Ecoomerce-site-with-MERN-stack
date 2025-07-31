@@ -13,9 +13,8 @@ function UserLogin() {
     async function AuthCheck() {
       try {
         let token = localStorage.getItem('accessToken')
-        
         let response = await axios.get(
-          `${import.meta.env.VITE_BASE_URI}/authChecker`,
+          `${import.meta.env.VITE_USER_URI}/authChecker`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,

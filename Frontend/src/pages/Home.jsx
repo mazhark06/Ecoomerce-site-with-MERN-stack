@@ -1,20 +1,19 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import useProtectedRoute from '../hooks/useProtectedRoute';
+import axios from 'axios';
+import userLogout from '../hooks/userLogout';
 function Home() {
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken'); // Fixed typo: 'accesToken' → 'accessToken'
-    if (!token) {
-      navigate('/user/login');
-    }
-  }, [navigate]); // Added navigate to dependency array
+
+  useProtectedRoute(); 
+
   
   return (
     <div className=''>
 
     Home
+    <button className='border bg-gray-500 rounded ' onClick={()=> userLogout(navigate)}> Logout</button>
 
     </div>
   );

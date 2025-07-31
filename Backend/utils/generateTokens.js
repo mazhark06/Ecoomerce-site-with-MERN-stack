@@ -19,11 +19,15 @@ return token
 }
 const verifyJWT  = async function (token) {
     try {
-        let validToken =await jwt.verify(token , process.env.REFRESH_SECRET_KEY)
+        let validToken = jwt.verify(token , process.env.REFRESH_SECRET_KEY)
+        if (!validToken) {
+           return null
+        }
         return validToken
         
     } catch (error) {
        console.log(error);
+       return null
         
     }
 }

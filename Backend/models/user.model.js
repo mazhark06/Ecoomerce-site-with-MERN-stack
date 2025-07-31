@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs'
 const userSchema = new mongoose.Schema({
 username:{
     type:String,
-    unique:true,
     required: true,
     lowercase:true
 },
@@ -22,8 +21,15 @@ refreshToken:{
     type:String,
     exprires : 24*7,
     createdAt: Date.now
+},
+mobile:{
+    type:String,
+    default:null
+},
+address:{
+    type:String,
+    default:null    
 }
-
 },{timestamps:true})
 
 

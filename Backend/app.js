@@ -4,6 +4,7 @@ import db from  './db/db.js'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
+import apiRoutes from './Routes/apiRoutes.js'
 dotenv.config()
 const app = express()
 
@@ -20,7 +21,7 @@ app.use(cookieParser())
 
 //routes
 app.use('/user',userRoutes)
-
+app.use('/api',apiRoutes)
 
 
 
