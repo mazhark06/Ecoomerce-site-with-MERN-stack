@@ -12,5 +12,5 @@ router.post('/login', userLogin)
 
 router.get('/authChecker' , userLoginSkipper)
 
-router.get('/logut',userAuthentication,userLogout)
+router.get('/logout',userAuthentication,userLogout)
 export default router

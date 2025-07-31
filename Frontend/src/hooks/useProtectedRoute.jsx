@@ -13,11 +13,10 @@ function useProtectedRoute() {
                     Authorization: `Bearer ${localStorage.getItem('accessToken')}`
                 }
             });
-            console.log(response.data)
-            if (!response.data.success) {
-                localStorage.removeItem('accessToken');
-                navigate('/user/login');
-            }
+            // if (!response.data.success) {
+            //     localStorage.removeItem('accessToken');
+            //     navigate('/user/login');
+            // }
 
         } catch (error) {
          console.log(error);

@@ -11,13 +11,16 @@ const app = express()
 db()
 
 //Middelwares
+app.use(cookieParser())
 app.use(cors({
-  origin: 'http://localhost:5500', // Your frontend URL
-  credentials: true,
+    origin: 'http://localhost:5500',  // Your exact frontend URL
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie']
 }));
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
-app.use(cookieParser())
 
 //routes
 app.use('/user',userRoutes)

@@ -20,15 +20,21 @@ email:{
 refreshToken:{
     type:String,
     exprires : 24*7,
-    createdAt: Date.now
+    createdAt: Date.now()
 },
 mobile:{
     type:String,
     default:null
 },
 address:{
-    type:String,
-    default:null    
+   type:mongoose.Schema.Types.ObjectId,
+   ref: "Address",
+   default: null
+},
+cart: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Cart",
+    default: null
 }
 },{timestamps:true})
 

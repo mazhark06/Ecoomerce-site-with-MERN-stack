@@ -35,8 +35,7 @@ const userSignup = async (req, res) => {
         maxAge: 24 * 60 * 60 * 1000,
         secure: false,
         sameSite: "None",
-      })
-      .cookie("refreshToken", refreshToken, {
+      }).cookie("refreshToken", refreshToken, {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         secure: false,
         sameSite: "None",
@@ -54,37 +53,68 @@ const userSignup = async (req, res) => {
 };
 
 const userLogin = async (req, res) => {
-  const { email, password } = req.body;
-  // console.log(req.body);
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password)
+    if (!email || !password) {
+      return res
+        .status(401)
+        .json(new Apiresponse(401, "Please enter your credentials", false, true));
+    }
+
+    let userExist = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    
+    if (!userExist) {
+      return res
+        .status(401)
+        .json(new Apiresponse(401, "User not exist", false, true));
+    }
+
+    let isValidPass = await userExist.isMatchPassword(password);
+    
+    if (!isValidPass) {
+      return res
+        .status(401)
+        .json(new Apiresponse(401, "Invalid credentials", false, true));
+    }
+    
+    let accessToken = await generateAccessToken(userExist._id);
+    let refreshToken = await generateRefreshToken(userExist._id);
+    
+    await User.findByIdAndUpdate(userExist._id, {
+      refreshToken: refreshToken,
+    });
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // false in development
+      sameSite: 'lax',
+      path: '/',
+      domain: 'localhost' // Your domain
+    };
+
+    // Set cookies first, then send response
     return res
-      .status(401)
-      .json(new Apiresponse(402, "Please enter your credentials", false, true));
-  let userExist = await User.findOne({ email: email.toLowerCase() }).select("+password");
-  if (!userExist)
+      .status(200)
+      .cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      })
+      .cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json(new Apiresponse(200, "Login successful", true, false, {
+        accessToken,
+        refreshToken
+      }));
+
+  } catch (error) {
+    console.error("Login error:", error);
     return res
-      .status(401)
-      .json(new Apiresponse(402, "User not exist", false, true));
-
-  let isValidPass = await userExist.isMatchPassword(password);
-  if (!isValidPass)
-    return res.json(new Apiresponse(402, "Invalid credentials", false, true));
-  let accessToken = await generateAccessToken(userExist._id);
-  // console.log(accessToken);
-
-  let refreshToken = await generateRefreshToken(userExist._id);
-  return res
-    .status(200)
-    .cookie("accessToken", accessToken, {
-      secure: false,
-      maxAge: 24 * 60 * 60 * 1000,
-    })
-    .cookie("refreshToken", refreshToken, {
-      secure: false,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-    .json(new Apiresponse(200, "User Login", true, false, { accessToken,refreshToken }));
+      .status(500)
+      .json(new Apiresponse(500, "Login failed", false, true, error.message));
+  }
 };
 
 const userLogout = async (req, res) => {
@@ -92,20 +122,25 @@ const userLogout = async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
       refreshToken: null,
     });
-    res
-      .clearCookie("refreshToken", {
-        secure: false,
-        sameSite: "None",
-      })
-      .clearCookie("accessToken", {
-        secure: false,
-        sameSite: "None",
-      });
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: 'production',
+      sameSite: 'Lax',
+      path: '/'
+    };
+
+    return res
+      .clearCookie("accessToken", cookieOptions)
+      .clearCookie("refreshToken", cookieOptions)
+      .status(200)
+      .json(new Apiresponse(200, "Logout successful", true, false));
+
   } catch (error) {
-    console.log(error);
-    res.json(
-      new Apiresponse(500, "Internal Server Error", false, true, error.message)
-    );
+    console.error("Logout error:", error);
+    return res
+      .status(500)
+      .json(new Apiresponse(500, "Logout failed", false, true, error.message));
   }
 };
 const userLoginSkipper = async (req, res) => {
@@ -117,7 +152,6 @@ const userLoginSkipper = async (req, res) => {
       !token.match(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/)
     ) {
       return res
-        .status(401)
         .json(new Apiresponse(401, "Invalid token format", false, true));
     }
 

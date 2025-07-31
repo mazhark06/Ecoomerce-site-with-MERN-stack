@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
 
+axios.defaults.withCredentials = true;
+
 function UserLogin() {
   let navigate = useNavigate()
   const [error, seterror] = useState("");
@@ -34,24 +36,33 @@ function UserLogin() {
   
   async function submitHandler(e) {
     e.preventDefault();
-    let { username, password } = credentials;
-    console.log(credentials);
-    console.log(username, password);
-
+    let { email, password } = credentials;
+if (!email || !password) {
+      seterror("Please fill all fields");
+      return;
+    }
     try {
       let response = await axios.post(
         `${import.meta.env.VITE_LOGIN_URI}`,
         {
-          username,
+          email,
           password,
         },
         {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true
         }
       );
-      console.log(response.data);
+      
+      if (response.data.success) {
+        localStorage.setItem("accessToken", response.data.data.accessToken);
+        localStorage.setItem("refreshToken", response.data.data.refreshToken);
+        navigate("/");
+      } else {
+        seterror(response.data.message);
+      }
     } catch (error) {
       console.log(error.response?.data);
       seterror(error.response?.data.message);
@@ -66,7 +77,7 @@ function UserLogin() {
     }));
   }
   const [credentials, setcredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   return (
@@ -83,15 +94,15 @@ function UserLogin() {
           }}
         >
           <div className="mx-auto w-[85%] my-3 mt-1">
-            <label className="px-1" htmlFor="username">
-              Enter your username or Email
+            <label className="px-1" htmlFor="email">
+              Enter your Email 
             </label>
             <input
               type="text"
-              name="username"
-              id="username"
+              name="email"
+              id="email"
               className=" text w-full bg-[#f1f0f0] border-none px-2 py-1 rounded "
-              value={credentials.username || ""}
+              value={credentials.email || ""}
               onChange={handleChange}
             />
           </div>
